@@ -31,7 +31,7 @@ PS4='Line ${LINENO}:'
 #
 
 # --------------------------------------
-SCRIPTVER="v5.1.8"
+SCRIPTVER="v5.1.9"
 #GCC8(.3.0)
 export GCCVERS=8
 # clean on gcc build error
@@ -44,7 +44,7 @@ export MPFR_VERSION=${MPFR_VERSION:-mpfr-4.0.2}
 export MPC_VERSION=${MPC_VERSION:-mpc-1.1.0}
 export ISL_VERSION=${ISL_VERSION:-isl-0.21}
 
-RSCRIPT_INFO="Xcode 11 support"
+RSCRIPT_INFO="Update edk2 to edk2-stable201908 to fix build error for clover r5068+"
 RSCRIPTVER=""
 export LC_ALL=C
 SYSNAME="$( uname )"
@@ -71,6 +71,7 @@ REMOTE_EDK2_REV="" # info for developer submenu this mean to show latest rev ava
 edk2array=(
 	MdePkg
 	MdeModulePkg
+	NetworkPkg
 	CryptoPkg
 	IntelFrameworkModulePkg
 	IntelFrameworkPkg
@@ -121,7 +122,7 @@ var_defaults=(
 	"USENTFS",,,"NO"
 	"GITHUB",,,"https://raw.githubusercontent.com/Micky1979/Build_Clover/master/Build_Clover.command"
 	"CLOVER_REP",,,"https://svn.code.sf.net/p/cloverefiboot/code"
-	"EDK2_REP",,,"https://svn.code.sf.net/p/edk2/code/trunk/edk2"
+	"EDK2_REP",,,"https://github.com/CloverHackyColor/edk2/trunk"
 	"DISABLE_CLEAR",,,"NO"
 	"MY_SCRIPT",,,
 	"FAST_UPDATE",,,"NO"
@@ -909,8 +910,10 @@ local edk2ArrayOnline=(
 	$( downloader "$updatelink" | grep 'cd ..' | sed -e 's/^cd ..\///' | sed -e 's/\/$//' | sed -e '/Clover/d' \
 	| sed -e 's:BaseTools/Conf:BaseTools:g' )
 )
-# use only if populated, otherwise use the static "edk2array"
-if [[ "${#edk2ArrayOnline[@]}" -ge "1" ]]; then unset -v edk2array; edk2array=( "${edk2ArrayOnline[@]}" ); fi
+# merge populated and static
+if [[ "${#edk2ArrayOnline[@]}" -ge "1" ]]; then
+	edk2array=(`for R in "${edk2ArrayOnline[@]}" "${edk2array[@]}" ; do echo "$R" ; done | sort -du`)
+fi
 
 if [[ "$ForceEDK2Update" -ne "1979" ]]; then
 	if [[ ! -d "${DIR_MAIN}/edk2/.svn" ]]; then ForceEDK2Update=1; fi
@@ -1653,7 +1656,7 @@ if [[ "${cus_conf}" != "Y" ]]; then
 	fi
 fi
 
-EDK2_REV="${EDK2_REV:-28976}"
+EDK2_REV="${EDK2_REV:-39498}"
 
 if [[ "${useDefaults}" == "Y" ]]; then
 	LoadDefaults
